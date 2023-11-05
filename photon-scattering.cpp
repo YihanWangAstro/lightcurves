@@ -206,18 +206,18 @@ int main(int argc, char** argv) {
     for (auto& th : threads) {
         th.join();
     }
-    std::cout << "output format: id, t0 [s], x [cm], y [cm], z [cm], vx [c], vy [c], vz [c], nu [Hz], weight\n"
-        /*size_t i = 0;
-        size_t stride = num_photon / num_job;
-        for (; i < num_job; ++i) {
-            threads.emplace_back(
-                std::thread(full_evolves, i, std::ref(photons), disk, cross_section, i * stride, (i + 1) * stride,
-        t_max));
-        }
+    std::cout << "output format: id, t0 [s], x [cm], y [cm], z [cm], vx [c], vy [c], vz [c], nu [Hz], weight\n";
+    /*size_t i = 0;
+    size_t stride = num_photon / num_job;
+    for (; i < num_job; ++i) {
         threads.emplace_back(
-            std::thread(full_evolves, i, std::ref(photons), disk, cross_section, (i + 1) * stride, num_photon, t_max));
-        for (auto& th : threads) {
-            th.join();
-        }*/
-        return 0;
+            std::thread(full_evolves, i, std::ref(photons), disk, cross_section, i * stride, (i + 1) * stride,
+    t_max));
+    }
+    threads.emplace_back(
+        std::thread(full_evolves, i, std::ref(photons), disk, cross_section, (i + 1) * stride, num_photon, t_max));
+    for (auto& th : threads) {
+        th.join();
+    }*/
+    return 0;
 }
