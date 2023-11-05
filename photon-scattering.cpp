@@ -164,12 +164,12 @@ void full_evolves(size_t job_id, std::vector<Photon>& photons, Disk const& disk,
                 trace_back_to_surface(disk, p);
 
                 file << i << ' ' << p.t0 << ' ' << p.x << ' ' << p.y << ' ' << p.z << ' ' << p.vx / c_cgs << ' '
-                     << p.vy / c_cgs << ' ' << p.vz / c_cgs << ' ' << p.nu << ' ' << mpf << ' ' << p.weight << '\n';
+                     << p.vy / c_cgs << ' ' << p.vz / c_cgs << ' ' << p.nu << ' ' << p.weight << '\n';
 
                 break;
             } else if (p.t0 > t_max) {
                 file << i << ' ' << p.t0 << ' ' << p.x << ' ' << p.y << ' ' << p.z << ' ' << p.vx / c_cgs << ' '
-                     << p.vy / c_cgs << ' ' << p.vz / c_cgs << ' ' << p.nu << ' ' << mpf << ' ' << p.weight << '\n';
+                     << p.vy / c_cgs << ' ' << p.vz / c_cgs << ' ' << p.nu << ' ' << p.weight << '\n';
                 break;
             }
         }
@@ -178,35 +178,46 @@ void full_evolves(size_t job_id, std::vector<Photon>& photons, Disk const& disk,
 
 int main(int argc, char** argv) {
     std::vector<Photon> photons(0);
-    size_t num_photon = load_photons("11hz/inits11.txt", photons);
-    double scale_height = 4.1e15;
-    double n0 = 1e10;
-    double cross_section = 6.65e-25;
+    int num_job = std::stoi(argv[1]);
+    std::string input_file_name(argv[2]);
+
+    double scale_height = std::stod(argv[3]);
+    double n0 = std::stod(argv[4]);
+
+    double view_angle = std::stod(argv[5]);
+    double open_angle = std::stod(argv[6]);
+    int photons_needed = std::stoi(argv[7]);
+
+    size_t num_photon = load_photons(input_file_name, photons);
+
     double t_max = 13.7e9 * 3.1e7;
+
+    double cross_section = 6.65e-25;
+
     Disk disk{10 * scale_height, scale_height, n0};
-
-    size_t num_job = 12;
-
-    // size_t photons_needed = 1000000;
 
     std::vector<std::thread> threads;
 
-    /* size_t i = 0;
-     for (; i < num_job; ++i) {
-         threads.emplace_back(std::thread(evolves, i, std::ref(photons), disk, cross_section, photons_needed / num_job,
-                                          t_max, std::stoi(argv[1]), std::stoi(argv[2])));
-     }
- */
     size_t i = 0;
-    size_t stride = num_photon / num_job;
     for (; i < num_job; ++i) {
-        threads.emplace_back(
-            std::thread(full_evolves, i, std::ref(photons), disk, cross_section, i * stride, (i + 1) * stride, t_max));
+        threads.emplace_back(std::thread(evolves, i, std::ref(photons), disk, cross_section, photons_needed / num_job,
+                                         t_max, view_angle, open_angle));
     }
-    threads.emplace_back(
-        std::thread(full_evolves, i, std::ref(photons), disk, cross_section, (i + 1) * stride, num_photon, t_max));
     for (auto& th : threads) {
         th.join();
     }
-    return 0;
+    std::cout << "output format: id, t0 [s], x [cm], y [cm], z [cm], vx [c], vy [c], vz [c], nu [Hz], weight\n"
+        /*size_t i = 0;
+        size_t stride = num_photon / num_job;
+        for (; i < num_job; ++i) {
+            threads.emplace_back(
+                std::thread(full_evolves, i, std::ref(photons), disk, cross_section, i * stride, (i + 1) * stride,
+        t_max));
+        }
+        threads.emplace_back(
+            std::thread(full_evolves, i, std::ref(photons), disk, cross_section, (i + 1) * stride, num_photon, t_max));
+        for (auto& th : threads) {
+            th.join();
+        }*/
+        return 0;
 }
